@@ -1,15 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify # type: ignore
+from pymongo.mongo_client import MongoClient # type: ignore
+from pymongo.server_api import ServerApi # type: ignore
 import zipfile
 import os
 from datetime import datetime
 import json
 import re
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch # type: ignore
 
 app = Flask(__name__)
-app.secret_key = 'tu_clave_secreta_aqui'  # Cambia esto por una clave secreta segura
+app.secret_key = "$ucentral2025ACGM#"  # Cambia esto por una clave secreta segura
 
 # Agregar la función now al contexto de la plantilla
 @app.context_processor
@@ -54,10 +54,38 @@ def about():
 @app.route('/contacto', methods=['GET', 'POST'])
 def contacto():
     if request.method == 'POST':
-        # Aquí va la lógica para procesar el formulario de contacto
-        return redirect(url_for('contacto'))
-    return render_template('contacto.html', version=VERSION_APP,creador=CREATOR_APP)
+        nombre = request.form.get("nombre")
+        email = request.form.get("email")
+        mensaje = request.form.get("mensaje")
 
+        client = connect_mongo()  # Esta función debe conectarse correctamente a Mongo Atlas
+        if not client:
+            return render_template(
+                'login.html',
+                error_message='Error de conexión con la base de datos. Por favor, intente más tarde.',
+                version=VERSION_APP,
+                creador=CREATOR_APP
+            )
+
+        try:
+            db = client['administracion']
+            contacto_collection = db['contacto']
+            
+            nuevo_contacto = {
+                "nombre": nombre,
+                "email": email,
+                "mensaje": mensaje
+            }
+
+            contacto_collection.insert_one(nuevo_contacto)
+
+        except Exception as e:
+            print(f"Error al guardar en MongoDB: {e}")
+            return render_template('contacto.html', error_message='No se pudo guardar el mensaje.', version=VERSION_APP, creador=CREATOR_APP)
+
+        return redirect(url_for('contacto'))
+
+    return render_template('contacto.html', version=VERSION_APP, creador=CREATOR_APP)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -174,6 +202,9 @@ def crear_coleccion():
     if 'usuario' not in session:
         return redirect(url_for('login'))
     
+    total_insertados = 0
+    colecciones_creadas = set()
+    
     try:
         database = request.form.get('database')
         collection_name = request.form.get('collection_name')
@@ -227,6 +258,33 @@ def crear_coleccion():
                                 print(f"Error al procesar el archivo {file}")
                             except Exception as e:
                                 print(f"Error al insertar datos del archivo {file}: {str(e)}")
+
+            # Carga masiva desde carpetas (colecciones múltiples)
+            for member in zip_ref.namelist():
+                if member.endswith('/'):
+                    continue
+
+                path_parts = member.split('/')
+                if len(path_parts) < 2:
+                    continue
+
+                folder_name = path_parts[0]
+                sub_collection = db[folder_name]
+                file_path = os.path.join(temp_dir, member)
+
+                if member.endswith('.json') and os.path.exists(file_path):
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+                            if isinstance(data, list):
+                                sub_collection.insert_many(data)
+                                total_insertados += len(data)
+                            else:
+                                sub_collection.insert_one(data)
+                                total_insertados += 1
+                            colecciones_creadas.add(folder_name)
+                    except Exception as e:
+                        print(f"Error procesando {member}: {str(e)}")
             
             # Limpiar el directorio temporal
             for root, dirs, files in os.walk(temp_dir, topdown=False):
@@ -236,7 +294,14 @@ def crear_coleccion():
                     os.rmdir(os.path.join(root, dir))
             os.rmdir(temp_dir)
         
-        return redirect(url_for('gestion_proyecto', database=database))
+        mensaje_exito = f"✅ Carga completada: {total_insertados} documentos insertados en {len(colecciones_creadas)} colección(es)."
+        
+        return render_template('gestion/crear_coleccion.html',
+                               success_message=mensaje_exito,
+                               database=database,
+                               usuario=session['usuario'],
+                               version=VERSION_APP,
+                               creador=CREATOR_APP)
         
     except Exception as e:
         return render_template('gestion/crear_coleccion.html',
