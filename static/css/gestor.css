@@ -1,22 +1,29 @@
 body {
-    background: linear-gradient(to right, #f9cbac, #f7f7f1);
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(to right, #f2f9ff, #ffe6e6); /* azul cielo a rosado */
     min-height: 100vh;
     margin: 0;
     padding: 0;
 }
+
+/* Encabezado */
 .header {
-    background-color: rgba(138, 193, 242, 0.9);
+    background-color: rgba(179, 221, 255, 0.9); /* azul cielo suave */
     padding: 1rem 0;
 }
+
+/* Contenedor principal */
 .container {
-    background-color: rgba(130, 180, 201, 0.9);
+    background-color: rgba(255, 248, 243, 0.95); /* blanco cálido */
     padding: 2rem;
     border-radius: 10px;
     margin-top: 2rem;
 }
+
+/* Pie de página */
 footer {
-    background-color: rgba(80, 129, 242, 0.9);
+    background-color: rgba(255, 185, 160, 0.9); /* salmón claro */
     padding: 1rem 0;
     margin-top: 2rem;
-    color: #666;
+    color: #444;
 }
