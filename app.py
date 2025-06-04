@@ -68,7 +68,7 @@ def contacto():
             )
 
         try:
-            db = client['administracion']
+            db = client['Administración']
             contacto_collection = db['contacto']
             
             nuevo_contacto = {
@@ -96,8 +96,8 @@ def login():
             return render_template('login.html', error_message='Error de conexión con la base de datos. Por favor, intente más tarde.', version=VERSION_APP,creador=CREATOR_APP)
         
         try:
-            db = client['administracion']
-            security_collection = db['seguridad']
+            db = client['Administración']
+            security_collection = db['Seguridad']
             usuario = request.form['usuario']
             password = request.form['password']
             # Verificar credenciales en MongoDB
@@ -126,10 +126,10 @@ def listar_usuarios():
         if not client:
             return jsonify({'error': 'Error de conexión con la base de datos'}), 500
         
-        db = client['administracion']
-        security_collection = db['seguridad']
+        db = client['Administración']
+        security_collection = db['Seguridad']
         
-        # Obtener todos los usuarios, excluyendo la contraseña por seguridad
+        # Obtener todos los usuarios, excluyendo la contraseña por Seguridad
         #usuarios = list(security_collection.find({}, {'password': 0}))
 
         usuarios = list(security_collection.find())
