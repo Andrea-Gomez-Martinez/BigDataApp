@@ -1,23 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
 body {
-    background: linear-gradient(to right, #255821, #40E0D0);
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(to right, #0a1f44, #1e3a8a);
     min-height: 100vh;
     margin: 0;
     padding: 0;
+    color: #0a1f44;
 }
+
+/* Encabezado */
 .header {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: #e6f0ff;
     padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.header h1 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin: 0;
+    color: #0a1f44;
+}
+
+.nav-link {
+    color: #1e3a8a !important;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+.nav-link:hover {
+    color: #0a1f44 !important;
+}
+
+/* Contenedor principal */
 .container {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: #ffffff;
     padding: 2rem;
-    border-radius: 10px;
+    border-radius: 15px;
     margin-top: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
+
+/* Imágenes de perfil */
+.profile-img {
+    max-width: 150px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem;
+}
+
+/* Botones de redes */
+.social-links .btn {
+    margin: 0.3rem;
+    font-weight: 600;
+}
+
+/* Pie de página */
 footer {
-    background-color: rgba(0, 95, 73, 0.9);
+    background-color: #0a1f44;
     padding: 1rem 0;
     margin-top: 2rem;
-    color: #666;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+/* Textos centrados */
+h1, h3, h4, p {
+    text-align: center;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+
+    .header h1 {
+        font-size: 1.4rem;
+    }
+
+    .nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .social-links .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
 }
     
