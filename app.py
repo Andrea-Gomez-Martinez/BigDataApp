@@ -198,6 +198,15 @@ def crear_coleccion_form(database):
                         creador=CREATOR_APP)
 
 @app.route('/crear-coleccion', methods=['POST'])
+
+def insert_in_batches(collection, data, batch_size=500):
+    for i in range(0, len(data), batch_size):
+        batch = data[i:i+batch_size]
+        try:
+            collection.insert_many(batch)
+        except Exception as e:
+            print(f"Error al insertar lote: {str(e)}")
+
 def crear_coleccion():
     if 'usuario' not in session:
         return redirect(url_for('login'))
@@ -251,7 +260,7 @@ def crear_coleccion():
                                 json_data = json.load(f)
                                 # Si el JSON es una lista, insertar cada elemento
                                 if isinstance(json_data, list):
-                                    collection.insert_many(json_data)
+                                    insert_in_batches(collection, json_data)
                                 else:
                                     collection.insert_one(json_data)
                             except json.JSONDecodeError:
@@ -277,7 +286,7 @@ def crear_coleccion():
                         with open(file_path, 'r', encoding='utf-8') as f:
                             data = json.load(f)
                             if isinstance(data, list):
-                                sub_collection.insert_many(data)
+                                insert_in_batches(sub_collection, data)
                                 total_insertados += len(data)
                             else:
                                 sub_collection.insert_one(data)
