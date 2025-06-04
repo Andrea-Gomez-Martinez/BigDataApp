@@ -1,29 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
 body {
     font-family: 'Montserrat', sans-serif;
-    background: linear-gradient(to right, #e6f2ff, #ffffff); /* azul claro a blanco */
+    background: linear-gradient(to right, #0a1f44, #1e3a8a); /* azul oscuro a azul medio */
     min-height: 100vh;
     margin: 0;
     padding: 0;
+    color: #0a1f44;
 }
 
 /* Encabezado */
 .header {
-    background-color: rgba(204, 229, 255, 0.95); /* azul muy claro */
+    background-color: #e6f0ff; /* azul claro usado en el header original */
     padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Contenedor principal */
 .container {
-    background-color: rgba(255, 255, 255, 0.95); /* blanco puro */
+    background-color: #ffffff; /* blanco puro */
     padding: 2rem;
-    border-radius: 10px;
+    border-radius: 15px;
     margin-top: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Pie de página */
 footer {
-    background-color: rgba(179, 221, 255, 0.9); /* azul cielo */
+    background-color: #0a1f44; /* azul profundo */
     padding: 1rem 0;
     margin-top: 2rem;
-    color: #333;
+    color: #ffffff;
+    font-size: 0.9rem;
 }
