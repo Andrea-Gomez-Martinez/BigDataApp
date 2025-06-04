@@ -1,6 +1,6 @@
 body {
     font-family: 'Montserrat', sans-serif;
-    background: linear-gradient(to right, #f2f9ff, #ffe6e6); /* azul cielo a rosado */
+    background: linear-gradient(to right, #e6f2ff, #ffffff); /* azul claro a blanco */
     min-height: 100vh;
     margin: 0;
     padding: 0;
@@ -8,13 +8,13 @@ body {
 
 /* Encabezado */
 .header {
-    background-color: rgba(179, 221, 255, 0.9); /* azul cielo suave */
+    background-color: rgba(204, 229, 255, 0.95); /* azul muy claro */
     padding: 1rem 0;
 }
 
 /* Contenedor principal */
 .container {
-    background-color: rgba(255, 248, 243, 0.95); /* blanco cálido */
+    background-color: rgba(255, 255, 255, 0.95); /* blanco puro */
     padding: 2rem;
     border-radius: 10px;
     margin-top: 2rem;
@@ -22,8 +22,8 @@ body {
 
 /* Pie de página */
 footer {
-    background-color: rgba(255, 185, 160, 0.9); /* salmón claro */
+    background-color: rgba(179, 221, 255, 0.9); /* azul cielo */
     padding: 1rem 0;
     margin-top: 2rem;
-    color: #444;
+    color: #333;
 }
