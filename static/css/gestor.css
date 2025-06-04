@@ -33,3 +33,14 @@ footer {
     color: #ffffff;
     font-size: 0.9rem;
 }
+
+.nav-link {
+    color: #1e3a8a !important; /* azul medio consistente */
+    font-weight: 600;
+    transition: color 0.3s ease;
+    text-align: center;
+}
+
+.nav-link:hover {
+    color: #0a1f44 !important; /* azul profundo al pasar el mouse */
+}
