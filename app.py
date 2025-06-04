@@ -202,63 +202,56 @@ def crear_coleccion_form(database):
 def crear_coleccion():
     if 'usuario' not in session:
         return redirect(url_for('login'))
-    
+
     total_insertados = 0
     colecciones_creadas = set()
-    
+
     try:
         database = request.form.get('database')
         collection_name = request.form.get('collection_name')
         zip_file = request.files.get('zip_file')
-        
+
         if not all([database, collection_name, zip_file]):
             return render_template('gestion/crear_coleccion.html',
-                                error_message='Todos los campos son requeridos',
-                                database=database,
-                                usuario=session['usuario'],
-                                version=VERSION_APP,
-                                creador=CREATOR_APP)
-        
-        # Conectar a MongoDB
+                                   error_message='Todos los campos son requeridos',
+                                   database=database,
+                                   usuario=session['usuario'],
+                                   version=VERSION_APP,
+                                   creador=CREATOR_APP)
+
         client = connect_mongo()
         if not client:
             return render_template('gestion/crear_coleccion.html',
-                                error_message='Error de conexión con MongoDB',
-                                database=database,
-                                usuario=session['usuario'],
-                                version=VERSION_APP,
-                                creador=CREATOR_APP)
-        
-        # Crear la colección
+                                   error_message='Error de conexión con MongoDB',
+                                   database=database,
+                                   usuario=session['usuario'],
+                                   version=VERSION_APP,
+                                   creador=CREATOR_APP)
+
         db = client[database]
         collection = db[collection_name]
-        
-        # Procesar el archivo ZIP
+
         with zipfile.ZipFile(zip_file) as zip_ref:
-            # Crear un directorio temporal para extraer los archivos
             temp_dir = os.path.join(os.path.dirname(__file__), 'temp')
             os.makedirs(temp_dir, exist_ok=True)
-            
-            # Extraer los archivos
             zip_ref.extractall(temp_dir)
-            
-            # Procesar cada archivo JSON
+
+            # Procesar cada archivo JSON línea por línea
             for root, _, files in os.walk(temp_dir):
                 for file in files:
                     if file.endswith('.json'):
                         file_path = os.path.join(root, file)
                         with open(file_path, 'r', encoding='utf-8') as f:
                             try:
-                                json_data = json.load(f)
-                                # Si el JSON es una lista, insertar cada elemento
-                                if isinstance(json_data, list):
-                                    collection.insert_many(json_data)
-                                else:
-                                    collection.insert_one(json_data)
-                            except json.JSONDecodeError:
-                                print(f"Error al procesar el archivo {file}")
+                                for line in f:
+                                    try:
+                                        doc = json.loads(line)
+                                        collection.insert_one(doc)
+                                        total_insertados += 1
+                                    except json.JSONDecodeError:
+                                        print(f"Línea inválida en {file}, se omite.")
                             except Exception as e:
-                                print(f"Error al insertar datos del archivo {file}: {str(e)}")
+                                print(f"Error procesando {file}: {str(e)}")
 
             # Carga masiva desde carpetas (colecciones múltiples)
             for member in zip_ref.namelist():
@@ -276,44 +269,45 @@ def crear_coleccion():
                 if member.endswith('.json') and os.path.exists(file_path):
                     try:
                         with open(file_path, 'r', encoding='utf-8') as f:
-                            data = json.load(f)
-                            if isinstance(data, list):
-                                sub_collection.insert_many(data)
-                                total_insertados += len(data)
-                            else:
-                                sub_collection.insert_one(data)
-                                total_insertados += 1
-                            colecciones_creadas.add(folder_name)
+                            for line in f:
+                                try:
+                                    doc = json.loads(line)
+                                    sub_collection.insert_one(doc)
+                                    total_insertados += 1
+                                except json.JSONDecodeError:
+                                    print(f"Línea inválida en {member}, se omite.")
+                        colecciones_creadas.add(folder_name)
                     except Exception as e:
                         print(f"Error procesando {member}: {str(e)}")
-            
-            # Limpiar el directorio temporal
+
+            # Limpiar archivos temporales
             for root, dirs, files in os.walk(temp_dir, topdown=False):
                 for file in files:
                     os.remove(os.path.join(root, file))
                 for dir in dirs:
                     os.rmdir(os.path.join(root, dir))
             os.rmdir(temp_dir)
-        
+
         mensaje_exito = f"✅ Carga completada: {total_insertados} documentos insertados en {len(colecciones_creadas)} colección(es)."
-        
+
         return render_template('gestion/crear_coleccion.html',
                                success_message=mensaje_exito,
                                database=database,
                                usuario=session['usuario'],
                                version=VERSION_APP,
                                creador=CREATOR_APP)
-        
+
     except Exception as e:
         return render_template('gestion/crear_coleccion.html',
-                            error_message=f'Error al crear la colección: {str(e)}',
-                            database=database,
-                            usuario=session['usuario'],
-                            version=VERSION_APP,
-                            creador=CREATOR_APP)
+                               error_message=f'Error al crear la colección: {str(e)}',
+                               database=database,
+                               usuario=session['usuario'],
+                               version=VERSION_APP,
+                               creador=CREATOR_APP)
     finally:
         if 'client' in locals():
             client.close()
+            
 @app.route('/ver-registros/<database>/<collection>')
 def ver_registros(database, collection):
     if 'usuario' not in session:
