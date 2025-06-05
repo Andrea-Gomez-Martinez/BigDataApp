@@ -673,10 +673,15 @@ def buscador():
                         }
                     }
                 ])
-            else:           #si no es una búsqueda por texto
-                search_text='*'+search_text+'*'
+            else:
                 query["query"]["bool"]["must"].append(
-                    {"match": {search_type: search_text}}
+                    {
+                        "query_string": {
+                            "fields": [search_type],
+                            "query": f"*{search_text}*",
+                            "default_operator": "AND"
+                        }
+                    }
                 )
 
             # Agregar rango de fechas
