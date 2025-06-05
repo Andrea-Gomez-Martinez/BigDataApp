@@ -38,8 +38,8 @@ def connect_mongo():
 
 # Configuración de Elasticsearch
 client = Elasticsearch(
-    "https://indexprueba-cb87f3.es.us-east-1.aws.elastic.cloud:443",
-    api_key="Q3VEYy1KWUJHdDB6RGdJR3gyc0g6cThLVzhJZS05eGxta0Q0NXQxTHYxZw=="
+    "https://bigdata-b6b9e6.es.us-east-1.aws.elastic.cloud:443",
+    api_key="ZVVodVBaY0JIY25VZU1UdGVUdkI6MjZ3dUppV09JRHZkT3h0Z3ZDZU9Fdw=="
 )
 INDEX_NAME = "ucentral_test"
 
