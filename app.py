@@ -739,7 +739,9 @@ def buscador():
 
     return render_template('buscador.html',
                         version=VERSION_APP,
-                        creador=CREATOR_APP)
+                        creador=CREATOR_APP,
+                        hits=None,
+                        aggregations=None  )
 
 @app.route('/api/search', methods=['GET', 'POST'])
 def search():
