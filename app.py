@@ -622,6 +622,8 @@ def buscador():
             search_text = request.form.get('search_text')
             fecha_desde = request.form.get('fecha_desde')
             fecha_hasta = request.form.get('fecha_hasta')
+            filtro_clasificacion = request.form.get('filtro_clasificacion')  # Nuevo
+            filtro_categoria = request.form.get('filtro_categoria')          # Nuevo
 
             # Establecer fechas por defecto si están vacías
             if not fecha_desde:
@@ -629,7 +631,7 @@ def buscador():
             if not fecha_hasta:
                 fecha_hasta = datetime.now().strftime("%Y-%m-%d")
 
-            # Construir la consulta base
+            # Construcción de la query
             query = {
                 "query": {
                     "bool": {
@@ -661,31 +663,27 @@ def buscador():
                 }
             }
 
-            # Agregar condición de búsqueda según el tipo
+            # Búsqueda por texto o campo específico
             if search_type == 'texto':
-                query["query"]["bool"]["must"].extend([
-                    {
-                        "match_phrase": {
-                            "texto": {
-                                "query": search_text,
-                                "slop": 1
-                            }
+                query["query"]["bool"]["must"].append({
+                    "match_phrase": {
+                        "texto": {
+                            "query": search_text,
+                            "slop": 1
                         }
                     }
-                ])
+                })
             else:
-                query["query"]["bool"]["must"].append(
-                    {
-                        "query_string": {
-                            "fields": [search_type],
-                            "query": f"*{search_text}*",
-                            "default_operator": "AND"
-                        }
+                query["query"]["bool"]["must"].append({
+                    "query_string": {
+                        "fields": [search_type],
+                        "query": f"*{search_text}*",
+                        "default_operator": "AND"
                     }
-                )
+                })
 
-            # Agregar rango de fechas
-            range_query = {
+            # Rango de fechas
+            query["query"]["bool"]["must"].append({
                 "range": {
                     "fecha": {
                         "format": "yyyy-MM-dd",
@@ -693,17 +691,31 @@ def buscador():
                         "lte": fecha_hasta
                     }
                 }
-            }
-            query["query"]["bool"]["must"].append(range_query)
+            })
 
-            # Ejecutar la búsqueda en Elasticsearch
+            # Filtro por clasificación (si se selecciona)
+            if filtro_clasificacion:
+                query["query"]["bool"]["must"].append({
+                    "term": {
+                        "clasificacion.keyword": filtro_clasificacion
+                    }
+                })
+
+            # Filtro por categoría (si se selecciona)
+            if filtro_categoria:
+                query["query"]["bool"]["must"].append({
+                    "term": {
+                        "categoria.keyword": filtro_categoria
+                    }
+                })
+
+            # Ejecutar búsqueda
             response = client.search(
                 index=INDEX_NAME,
                 body=query
             )
 
-            # Preparar los resultados para la plantilla
-            hits         = response['hits']['hits']
+            hits = response['hits']['hits']
             aggregations = response['aggregations']
 
             return render_template('buscador.html',
@@ -715,14 +727,16 @@ def buscador():
                                 search_text=search_text,
                                 fecha_desde=fecha_desde,
                                 fecha_hasta=fecha_hasta,
+                                filtro_clasificacion=filtro_clasificacion,
+                                filtro_categoria=filtro_categoria,
                                 query=query)
-        
+
         except Exception as e:
             return render_template('buscador.html',
                                 version=VERSION_APP,
                                 creador=CREATOR_APP,
                                 error_message=f'Error en la búsqueda: {str(e)}')
-    
+
     return render_template('buscador.html',
                         version=VERSION_APP,
                         creador=CREATOR_APP)
