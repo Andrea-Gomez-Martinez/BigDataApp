@@ -617,21 +617,15 @@ def elastic_eliminar_documento():
 def buscador():
     if request.method == 'POST':
         try:
-            # Obtener los parámetros del formulario
             search_type = request.form.get('search_type')
             search_text = request.form.get('search_text')
-            fecha_desde = request.form.get('fecha_desde')
-            fecha_hasta = request.form.get('fecha_hasta')
-            filtro_clasificacion = request.form.get('filtro_clasificacion')  # Nuevo
-            filtro_categoria = request.form.get('filtro_categoria')          # Nuevo
+            fecha_desde = request.form.get('fecha_desde') or "1500-01-01"
+            fecha_hasta = request.form.get('fecha_hasta') or datetime.now().strftime("%Y-%m-%d")
 
-            # Establecer fechas por defecto si están vacías
-            if not fecha_desde:
-                fecha_desde = "1500-01-01"
-            if not fecha_hasta:
-                fecha_hasta = datetime.now().strftime("%Y-%m-%d")
+            # ✅ Obtener listas completas de checkboxes seleccionados
+            filtro_clasificacion = request.form.getlist('clasificacion')
+            filtro_categoria = request.form.getlist('categoria')
 
-            # Construcción de la query
             query = {
                 "query": {
                     "bool": {
@@ -663,7 +657,7 @@ def buscador():
                 }
             }
 
-            # Búsqueda por texto o campo específico
+            # Búsqueda por texto
             if search_type == 'texto':
                 query["query"]["bool"]["must"].append({
                     "match_phrase": {
@@ -693,23 +687,22 @@ def buscador():
                 }
             })
 
-            # Filtro por clasificación (si se selecciona)
+            # ✅ Filtro por clasificación
             if filtro_clasificacion:
                 query["query"]["bool"]["must"].append({
-                    "term": {
+                    "terms": {
                         "clasificacion.keyword": filtro_clasificacion
                     }
                 })
 
-            # Filtro por categoría (si se selecciona)
+            # ✅ Filtro por categoría
             if filtro_categoria:
                 query["query"]["bool"]["must"].append({
-                    "term": {
+                    "terms": {
                         "categoria.keyword": filtro_categoria
                     }
                 })
 
-            # Ejecutar búsqueda
             response = client.search(
                 index=INDEX_NAME,
                 body=query
@@ -741,7 +734,8 @@ def buscador():
                         version=VERSION_APP,
                         creador=CREATOR_APP,
                         hits=None,
-                        aggregations=None  )
+                        aggregations=None)
+
 
 @app.route('/api/search', methods=['GET', 'POST'])
 def search():
