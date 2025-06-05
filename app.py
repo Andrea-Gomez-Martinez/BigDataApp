@@ -614,6 +614,8 @@ def elastic_eliminar_documento():
 
 @app.route('/buscador', methods=['GET', 'POST'])
 def buscador():
+    
+   
     if request.method == 'POST':
         try:
             # Obtener los parámetros del formulario
@@ -689,6 +691,33 @@ def buscador():
                 }
             }
             query["query"]["bool"]["must"].append(range_query)
+
+                        # Capturar filtros seleccionados
+            categorias_seleccionadas      = request.form.getlist('categoria')
+            clasificaciones_seleccionadas = request.form.getlist('clasificacion')
+            anios_seleccionados           = request.form.getlist('Fecha')
+
+            if categorias_seleccionadas:
+                query["query"]["bool"]["must"].append({
+                    "terms": {
+                        "categoria": categorias_seleccionadas
+                    }
+                })
+
+            if clasificaciones_seleccionadas:
+                query["query"]["bool"]["must"].append({
+                    "terms": {
+                        "clasificacion": clasificaciones_seleccionadas
+                    }
+                })
+
+            if anios_seleccionados:
+                query["query"]["bool"]["must"].append({
+                    "terms": {
+                        "fecha": anios_seleccionados
+                    }
+                })
+
 
             # Ejecutar la búsqueda en Elasticsearch
             response = client.search(
