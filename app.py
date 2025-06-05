@@ -613,14 +613,13 @@ def elastic_eliminar_documento():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/buscador', methods=['GET', 'POST'])
+
 def buscador():
-    
-    def buscador():
     if request.method == 'POST':
         try:
             # 1. Obtener parámetros del formulario
-            search_type  = request.form.get('search_type')   # 'texto', 'titulo', 'autor' o 'categoria'
-            search_text  = request.form.get('search_text')   # lo que el usuario escribe
+            search_type  = request.form.get('search_type')
+            search_text  = request.form.get('search_text')
             fecha_desde  = request.form.get('fecha_desde')
             fecha_hasta  = request.form.get('fecha_hasta')
 
@@ -630,22 +629,20 @@ def buscador():
             if not fecha_hasta:
                 fecha_hasta = datetime.now().strftime("%Y-%m-%d")
 
-            # 3. Mapeo de campos según cómo estén indexados en Elasticsearch
-            # Ajusta estos valores para que coincidan exactamente con los nombres de campo en tu índice.
+            # 3. Mapeo de campos
             field_map = {
-                'texto':     'texto',       # suponiendo que el campo en ES se llame exactamente "texto"
-                'titulo':    'Titulo',      # si tu mapping tiene "Titulo" con T mayúscula
-                'autor':     'Autor',       # si tu mapping tiene "Autor" con A mayúscula
-                'categoria': 'Categoria'    # si tu mapping tiene "Categoria" con C mayúscula
+                'texto':     'texto',
+                'titulo':    'Titulo',
+                'autor':     'Autor',
+                'categoria': 'Categoria'
             }
             campo = field_map.get(search_type, search_type)
 
-            # 4. Construir la consulta base
+            # 4. Query base
             query = {
                 "query": {
                     "bool": {
                         "must": [
-                            # 4.a) Condición de búsqueda parcial (wildcard)
                             {
                                 "wildcard": {
                                     campo: {
@@ -653,7 +650,6 @@ def buscador():
                                     }
                                 }
                             },
-                            # 4.b) Filtro por rango de fecha
                             {
                                 "range": {
                                     "fecha": {
@@ -669,7 +665,7 @@ def buscador():
                 "aggs": {
                     "categoria": {
                         "terms": {
-                            "field": "Categoria.keyword",  # para facetas conviene usar keyword si existe
+                            "field": "Categoria.keyword",
                             "size": 10,
                             "order": {"_key": "asc"}
                         }
@@ -691,14 +687,13 @@ def buscador():
                 }
             }
 
-            # 5. Ejecutar la búsqueda en Elasticsearch
+            # 5. Ejecutar búsqueda
             response = client.search(
                 index=INDEX_NAME,
                 body=query
             )
 
-            # 6. Extraer resultados para la plantilla
-            hits         = response['hits']['hits']
+            hits = response['hits']['hits']
             aggregations = response.get('aggregations', {})
 
             return render_template('buscador.html',
@@ -718,11 +713,10 @@ def buscador():
                                    creador=CREATOR_APP,
                                    error_message=f'Error en la búsqueda: {str(e)}')
 
-    # GET: solo renderizar el formulario en blanco
+    # GET (aunque con método POST declarado, esto puede no ocurrir)
     return render_template('buscador.html',
                            version=VERSION_APP,
                            creador=CREATOR_APP)
-
 
 @app.route('/api/search', methods=['POST'])
 def search():
