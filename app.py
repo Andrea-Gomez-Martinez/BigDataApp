@@ -621,8 +621,7 @@ def buscador():
             search_text = request.form.get('search_text')
             fecha_desde = request.form.get('fecha_desde') or "1500-01-01"
             fecha_hasta = request.form.get('fecha_hasta') or datetime.now().strftime("%Y-%m-%d")
-
-            # ✅ Obtener listas completas de checkboxes seleccionados
+           
             filtro_clasificacion = request.form.getlist('clasificacion')
             filtro_categoria = request.form.getlist('categoria')
 
@@ -687,7 +686,7 @@ def buscador():
                 }
             })
 
-            # ✅ Filtro por clasificación
+            #  Filtro por clasificación
             if filtro_clasificacion:
                 query["query"]["bool"]["must"].append({
                     "terms": {
@@ -695,7 +694,7 @@ def buscador():
                     }
                 })
 
-            # ✅ Filtro por categoría
+            #  Filtro por categoría
             if filtro_categoria:
                 query["query"]["bool"]["must"].append({
                     "terms": {
