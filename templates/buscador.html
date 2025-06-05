@@ -96,7 +96,7 @@
                                         <div class="accordion-body">
                                             {% for bucket in agg_data.buckets %}
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="{{ agg_name }}" value="{{ bucket.key }}" id="{{ agg_name }}_{{ bucket.key }}">
+                                                <input class="form-check-input" type="checkbox" name="{{ agg_name }}" value="{{ bucket.key }}" id="{{ agg_name }}_{{ bucket.key }}" onchange="this.form.submit()">
                                                 <label class="form-check-label" for="{{ agg_name }}_{{ bucket.key }}">
                                                     {{ bucket.key }} ({{ bucket.doc_count }})
                                                 </label>
