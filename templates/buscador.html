@@ -57,7 +57,7 @@
                     <div class="row mb-3">
                         <div class="col-12">
                             <label for="search_text" class="form-label">Texto a buscar:</label>
-                            <input type="text" class="form-control" id="search_text" name="search_text" value="{{ search_text }}" required>
+                            <input type="text" class="form-control" id="search_text" name="search_text" value="{{ search_text|default('') }}" required>
                         </div>
                     </div>
                     <div class="row">
@@ -96,7 +96,7 @@
                                         <div class="accordion-body">
                                             {% for bucket in agg_data.buckets %}
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="{{ agg_name }}" value="{{ bucket.key }}" id="{{ agg_name }}_{{ bucket.key }}" onchange="this.form.submit()">
+                                                <input class="form-check-input" type="checkbox" name="{{ agg_name }}" value="{{ bucket.key }}" id="{{ agg_name }}_{{ bucket.key }}" onchange="submitConContexto(this)">
                                                 <label class="form-check-label" for="{{ agg_name }}_{{ bucket.key }}">
                                                     {{ bucket.key }} ({{ bucket.doc_count }})
                                                 </label>
@@ -153,7 +153,35 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
     <script>
+        function submitConContexto(checkbox) {
+            const form = document.getElementById('searchForm');
+
+            // Eliminar campos ocultos existentes
+            ['search_type', 'search_text', 'fecha_desde', 'fecha_hasta'].forEach(name => {
+                const oldInput = form.querySelector('input[type="hidden"][name="' + name + '"]');
+                if (oldInput) oldInput.remove();
+            });
+
+            const campos = {
+                search_type: "{{ search_type|default('') }}",
+                search_text: "{{ search_text|default('') }}",
+                fecha_desde: "{{ fecha_desde|default('') }}",
+                fecha_hasta: "{{ fecha_hasta|default('') }}"
+            };
+
+            for (const nombre in campos) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = nombre;
+                input.value = campos[nombre];
+                form.appendChild(input);
+            }
+
+            form.submit();
+        }
+
         function limpiarFormulario() {
             document.getElementById('searchForm').reset();
             if ($.fn.DataTable.isDataTable('#resultadosTable')) {
@@ -185,4 +213,5 @@
     </script>
 </body>
 </html>
+
 
