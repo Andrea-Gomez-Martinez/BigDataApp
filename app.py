@@ -41,7 +41,7 @@ client = Elasticsearch(
     "https://bigdata-b6b9e6.es.us-east-1.aws.elastic.cloud:443",
     api_key="ZVVodVBaY0JIY25VZU1UdGVUdkI6MjZ3dUppV09JRHZkT3h0Z3ZDZU9Fdw=="
 )
-INDEX_NAME = "ucentral_test"
+INDEX_NAME = "bigdata"
 
 @app.route('/')
 def index():
@@ -725,7 +725,7 @@ def buscador():
 def search():
     try:
         data = request.get_json()
-        index_name = data.get('index', 'ucentral_test')
+        index_name = data.get('index', 'bigdata')
         query = data.get('query')
 
         # Ejecutar la búsqueda en Elasticsearch
