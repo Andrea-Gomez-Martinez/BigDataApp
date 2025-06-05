@@ -617,31 +617,33 @@ def elastic_eliminar_documento():
 def buscador():
     if request.method == 'POST':
         try:
-            search_type = request.form.get('search_type')
-            search_text = request.form.get('search_text')
+            search_type = request.form.get('search_type', 'texto')
+            search_text = request.form.get('search_text', '')
             fecha_desde = request.form.get('fecha_desde') or "1500-01-01"
             fecha_hasta = request.form.get('fecha_hasta') or datetime.now().strftime("%Y-%m-%d")
-           
+
+            # Filtros seleccionados (segunda etapa del buscador)
             filtro_clasificacion = request.form.getlist('clasificacion')
             filtro_categoria = request.form.getlist('categoria')
 
             query = {
                 "query": {
                     "bool": {
-                        "must": []
+                        "must": [],
+                        "filter": []
                     }
                 },
                 "aggs": {
                     "categoria": {
                         "terms": {
-                            "field": "categoria",
+                            "field": "categoria.keyword",
                             "size": 10,
                             "order": {"_key": "asc"}
                         }
                     },
                     "clasificacion": {
                         "terms": {
-                            "field": "clasificacion",
+                            "field": "clasificacion.keyword",
                             "size": 10,
                             "order": {"_key": "asc"}
                         }
@@ -656,7 +658,7 @@ def buscador():
                 }
             }
 
-            # Búsqueda por texto
+            # Búsqueda por texto o campo específico
             if search_type == 'texto':
                 query["query"]["bool"]["must"].append({
                     "match_phrase": {
@@ -676,7 +678,7 @@ def buscador():
                 })
 
             # Rango de fechas
-            query["query"]["bool"]["must"].append({
+            query["query"]["bool"]["filter"].append({
                 "range": {
                     "fecha": {
                         "format": "yyyy-MM-dd",
@@ -686,54 +688,60 @@ def buscador():
                 }
             })
 
-            #  Filtro por clasificación
+            # Filtro por clasificación (si aplica)
             if filtro_clasificacion:
-                query["query"]["bool"]["must"].append({
+                query["query"]["bool"]["filter"].append({
                     "terms": {
                         "clasificacion.keyword": filtro_clasificacion
                     }
                 })
 
-            #  Filtro por categoría
+            # Filtro por categoría (si aplica)
             if filtro_categoria:
-                query["query"]["bool"]["must"].append({
+                query["query"]["bool"]["filter"].append({
                     "terms": {
                         "categoria.keyword": filtro_categoria
                     }
                 })
 
-            response = client.search(
-                index=INDEX_NAME,
-                body=query
-            )
+            # Ejecutar búsqueda
+            response = client.search(index=INDEX_NAME, body=query)
 
             hits = response['hits']['hits']
-            aggregations = response['aggregations']
+            aggregations = response.get('aggregations', {})
 
             return render_template('buscador.html',
-                                version=VERSION_APP,
-                                creador=CREATOR_APP,
-                                hits=hits,
-                                aggregations=aggregations,
-                                search_type=search_type,
-                                search_text=search_text,
-                                fecha_desde=fecha_desde,
-                                fecha_hasta=fecha_hasta,
-                                filtro_clasificacion=filtro_clasificacion,
-                                filtro_categoria=filtro_categoria,
-                                query=query)
+                                   version=VERSION_APP,
+                                   creador=CREATOR_APP,
+                                   hits=hits,
+                                   aggregations=aggregations,
+                                   search_type=search_type,
+                                   search_text=search_text,
+                                   fecha_desde=fecha_desde,
+                                   fecha_hasta=fecha_hasta,
+                                   filtro_clasificacion=filtro_clasificacion,
+                                   filtro_categoria=filtro_categoria,
+                                   query=query)
 
         except Exception as e:
             return render_template('buscador.html',
-                                version=VERSION_APP,
-                                creador=CREATOR_APP,
-                                error_message=f'Error en la búsqueda: {str(e)}')
+                                   version=VERSION_APP,
+                                   creador=CREATOR_APP,
+                                   error_message=f'Error en la búsqueda: {str(e)}')
 
+    # GET: render vacío
     return render_template('buscador.html',
-                        version=VERSION_APP,
-                        creador=CREATOR_APP,
-                        hits=None,
-                        aggregations=None)
+                           version=VERSION_APP,
+                           creador=CREATOR_APP,
+                           hits=None,
+                           aggregations=None,
+                           search_type='texto',
+                           search_text='',
+                           fecha_desde='1500-01-01',
+                           fecha_hasta=datetime.now().strftime("%Y-%m-%d"),
+                           filtro_clasificacion=[],
+                           filtro_categoria=[],
+                           query=None)
 
 
 @app.route('/api/search', methods=['GET', 'POST'])
